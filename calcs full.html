@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific calculator</title>
+<style>
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    transition: background 0.3s ;
+
+}
+.dark-mode {
+    background-color: #222;
+    color: white;
+}
+.dark-mode .calculator{
+    background: #333;
+}
+.dark-mode button{
+    background: #444;
+    color: white;
+}
+
+.calculator{
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,1);
+    width:300px;
+ 
+    
+}
+body.dark-mode .calculator{
+    background-color: #333;
+}  
+
+input{
+    width: 100%;
+    height: 40px;
+    text-align: right;
+    margin-bottom: 10px;
+    font-size: 18px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button{
+    width:60px;
+    height: 40px;
+    margin: 3px;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-function{
+    background-color: #f7f7f7;
+}
+body.dark-mode .btn-function{
+    background-color: #555;
+    color:#fff;
+}
+button:hover{
+    background-color: #ddd;
+    transform:scale(1.05);
+    transition: 0.1s;
+}
+button:active{
+    transform: scale(0.95);
+}
+.history{
+    margin-top: 10px;
+    max-height: 100px;
+    overflow-y: auto;
+    font-size:14px;
+}
+.toggle{
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 8px 12px;
+}
+
+</style>
+
+</head>
+<body>
+
+    <div class ="calculator">
+        <div class="toggle">
+
+             <button onclick="toggleTheme()">Toggle Light/Dark</button>
+
+        </div>
+       <input type="text" id="display">
+       <div>
+        <button onclick="clearDisplay()">C</button>
+        <button onclick="backspace()">←</button>
+        <button onclick="appendValue('(')">(</button>
+        <button onclick="appendValue(')')">)</button>
+</div>
+
+<div>
+    <button onclick="appendValue('7')">7</button>
+    <button onclick="appendValue('8')">8</button>
+    <button onclick="appendValue('9')">9</button>
+    <button onclick="appendValue('/')">/</button>
+    
+</div>
+
+<div>
+    <button onclick="appendValue('6')">6</button>
+    <button onclick="appendValue('5')">5</button>
+    <button onclick="appendValue('4')">4</button>
+    <button onclick="appendValue('*')">*</button>
+</div>
+
+<div>
+    <button onclick="appendValue('1')">1</button>
+    <button onclick="appendValue('2')">2</button>
+    <button onclick="appendValue('3')">3</button>
+    <button onclick="appendValue('-')">-</button>
+</div>
+
+<div>
+    <button onclick="appendValue('0')">0</button>
+    <button onclick="appendValue('.')">.</button>
+    <button onclick="calculate()">=</button>
+    <button onclick="appendValue('+')">+</button>
+</div>
+
+   <div>
+
+    <button onclick="appendValue('%')">%</button>
+</div>
+
+
+<div>
+    <button class="btn-function" onclick="appendValue('Math.sin(')">sin</button>
+    <button class="btn-function" onclick="appendValue('Math.cos(')">cos</button> 
+    <button class="btn-function" onclick="appendValue('Math.tan(')">tan</button>
+    <button class="btn-function" onclick="appendValue('Math.log(')">log</button>
+    <button class="btn-function" onclick="appendValue('Math.sqrt(')">√</button>
+    </div>
+
+ <div>
+    <button class="btn-function" onclick="memoryAdd()">M+</button>
+    <button class="btn-function" onclick="memorySubtract()">M-</button>
+    <button class="btn-function" onclick="memoryRecall()">MR</button>
+    <button class="btn-function" onclick="memoryClear()">MC</button>
+ </div>  
+ 
+ <div>
+    <div class="history" id="history"></div>
+ </div>
+
+</div>
+
+
+<script>
+ 
+class Calculator {
+    constructor(displayEl, historyEl) {
+        this.displayEl = displayEl;  
+        this.historyEl = historyEl;  
+        this.memory = 0;             
+        this.history = [];           
+    }
+
+    append(value) {
+        this.displayEl.value += value;
+    }
+
+    clear() {
+        this.displayEl.value = "";
+    }
+
+    backspace() {
+        this.displayEl.value = this.displayEl.value.slice(0, -1);
+    }
+
+    calculate() {
+        try {
+            const result = eval(this.displayEl.value); 
+            this.addToHistory(`${this.displayEl.value} = ${result}`);
+            this.displayEl.value = result;
+        } catch (err) {
+            this.displayEl.value = "Error";
+        }
+    }
+
+    addToHistory(entry) {
+        this.history.push(entry);
+        if (this.history.length > 10) this.history.shift();
+        this.historyEl.innerHTML = this.history.join("<br>");
+    }
+
+    memoryAdd() {
+        this.memory += parseFloat(this.displayEl.value) || 0;
+    }
+
+    memorySubtract() {
+        this.memory -= parseFloat(this.displayEl.value) || 0;
+    }
+
+    memoryRecall() {
+        this.displayEl.value += this.memory;
+    }
+
+    memoryClear() {
+        this.memory = 0;
+    }
+
+    toggleTheme() {
+        document.body.classList.toggle("dark-mode");
+    }
+}
+
+
+const calc = new Calculator(
+    document.getElementById("display"),
+    document.getElementById("history")
+);
+
+
+function appendValue(v) { calc.append(v); }
+function clearDisplay() { calc.clear(); }
+function backspace() { calc.backspace(); }
+function calculate() { calc.calculate(); }
+function memoryAdd() { calc.memoryAdd(); }
+function memorySubtract() { calc.memorySubtract(); }
+function memoryRecall() { calc.memoryRecall(); }
+function memoryClear() { calc.memoryClear(); }
+function toggleTheme() { calc.toggleTheme(); }
+
+</script>
+
+
+
+
+
+</body>
+</html>
+
+

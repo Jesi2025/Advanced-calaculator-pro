@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do Application</title>
+    <style>
+     body{
+        background: #f5f6f9;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+        color: #222;
+       } 
+
+    .todo{
+        width: 100%;
+        max-width: 520px;
+        background: #fff;
+        border-radius: 20px;
+        padding:28px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+
+    }
+    h2{
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 26px;
+        font-weight: 700;
+        
+    }
+    .input-box{
+        display: flex;
+        flex-direction: column;
+        gap:12px;
+        margin-bottom: 20px;
+    }
+    input{
+        padding: 14px;
+        border-radius: 12px;
+        border:1px solid #ddd;
+        font-size: 15px;
+        outline: none;
+        transition: 0.2s;
+    }
+    input:focus {
+        border-color: #4a74ff;
+    }
+    button{
+        padding: 12px;
+        border:none;
+        border-radius: 12px;
+        font-size:15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    button:active{
+        transform: scale(0.95);
+    }
+    #addBtn{
+        background: #4a74ff;
+        color: white;
+    }
+    #addBtn:hover{
+        background: #3b63e6;
+    }
+    .fliter-row{
+        display: flex;
+        margin-bottom: 12px;
+        margin-top: 12px;
+        gap: 10px;
+        justify-content: center;
+    }
+    .fliter-row button{
+        flex: 1;
+        background: #f1f3f9;
+        color:#333;
+        padding: 8px 16px;
+        border-radius: 30px;
+        border:1px solid #ddd;
+        transition: 0.2s;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .fliter-row button:hover{
+        background: #eaeaea;
+        transform: scale();
+    }
+    .fliter-row button.active{
+        background: #4a74ff;
+        color: white;
+        border-color: #4a74ff;
+    }
+    select{
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border:1px solid #ddd;
+        margin-bottom: 12px;
+        font-size: 15px;
+        outline: none;
+        transition: 0.2s;
+
+    }
+    h3{
+        margin: 10px;
+        font-size: 18px;
+    }
+    #list{
+        margin-top: 10px;
+        display:flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .task{
+        background: #fafafa;
+        padding: 14px;
+        border-radius: 8px;
+        border: 1px solid #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: 0.3s ease;
+    }
+
+    .task-info{
+        display: flex;
+        flex-direction: column;
+        gap:4px;
+    }
+    
+    .task-title{
+        font-weight: 600;
+    }
+    .task-desc{
+        font-size: 13px;
+        color: #666;
+    }
+
+    .done .task-title{
+        text-decoration: line-through;
+        color: #999;
+    }
+    .done .task-desc{
+        color: #999;
+    }
+    .action{
+        display: flex;
+        gap:10px;
+    }
+    .edit-btn{
+        background: #ffe08a;
+    }
+    .edit-btn:hover{
+        background:#ffd86e;
+    }
+    .delete-btn{
+        background: #ff6b6b;
+        color: white;
+    }
+    .delete-btn:hover{
+        background: #ff6b6b;
+    }
+    #clearCompleted {
+        margin-top: 20px;
+        background: #222;
+        color: white;
+        width: 100%;
+    }
+    #clearCompleted:hover{
+      background: #4a74ff;
+    }
+
+
+</style>
+
+</head>
+<body>
+    <div class="todo">
+        <h2>Smart To-Do Manager</h2>
+
+     <div class="input-box">
+     <input id="title" placeholder="Task Title">
+     <input id="desc" placeholder="Task Description">
+     <button id="addBtn">Add Task</button>
+     </div>
+
+     <div class="filter-row">
+        <button filter="all" class="active">All</button>
+        <button filter="active">Active</button>
+        <button filter="completed">Completed</button>
+     </div>
+     <select id="sort">
+        <option value="date">Sort by Date</option>
+        <option value="alpha">Sort A-Z </option>
+     </select>
+
+     <h3>Active Task: <span id="counter">0</span></h3>
+        
+     <div id="list"></div>
+
+     <button id="clearCompleted">Clear Completed</button>
+        
+    </div>
+
+    <script>
+        class Task{
+            constructor(title,desc){
+                this.id = Date.now();
+                this.title = title;
+                this.desc = desc;
+                this.completed = false;
+                this.createdAt = new Date();
+            }
+        }
+
+        class Todo {
+            constructor(listEl,counterEl){
+                this.tasks = [];
+                this.listEl = listEl;
+                this.counterEl = counterEl;
+                this.filter = "all";
+                this.sortType = "date";
+            }
+
+              saveToLocal() {
+        localStorage.setItem("tasks", JSON.stringify(this.tasks));
+    }
+
+
+     loadFromLocal() {
+        const data = JSON.parse(localStorage.getItem("tasks"));
+        if (data) {
+            this.tasks = data.map(t => {
+                let task = new Task(t.title, t.desc);
+                task.id = t.id;
+                task.completed = t.completed;
+                task.createdAt = new Date(t.createdAt);
+                return task;
+            });
+        }
+    }  
+
+         addTask(title,desc){
+            if(!title.trim())return alert("Title cannot be empty!");
+            const task = new Task(title,desc);
+            this.tasks.push(task);
+            this.render();
+        }
+        deleteTask(id){
+            this.tasks = this.tasks.filter(t => t.id !== id);
+            this.render();
+        }
+        toggleComplete(id){
+            const task = this.tasks.find(t => t.id === id);
+            task.completed = !task.completed;
+            this.render();
+        }
+        editTask(id,newTitle,newDesc){
+            const task = this.tasks.find(t => t.id === id);
+            task.title = newTitle;
+            task.desc  = newDesc;
+            this.render();
+        }
+
+       setFilterType(filter){
+        this.filter = filter;
+        this.render();
+       }
+       setSortType(type){
+        this.sortType = type;
+        this.render();
+       }
+       
+       clearCompleted(){
+       this.tasks = this.tasks.filter(t => !t.completed);
+       this.render();
+       }
+     
+      getFilteredTask(){
+        if(this.filter ==="active")return this.tasks.filter(t => !t.completed);
+        if(this.filter ==="completed")return this.tasks.filter(t => t.completed);
+        return this.tasks;
+      } 
+      sortTasks(arr){
+        if(this.sortType === "alpha"){
+            return arr.sort((a,b)=>a.title.localeCompare(b.title));
+        }
+        return arr.sort((a,b)=> b.createdAt - a.createdAt);
+      }
+
+      updateCounter(){
+        const active = this.tasks.filter(t => !t.completed).length;
+        this.counterEl.textContent = active;
+      }
+    render(){
+        let filtered = this.getFilteredTask();
+        filtered = this.sortTasks(filtered);
+
+        this.listEl.innerHTML = "";
+    
+        
+     filtered.forEach(task => {
+    const div = document.createElement("div");
+    div.className = "task " + (task.completed ? "done" : "");
+
+    div.innerHTML = `
+        <div class="task-info">
+            <span class="task-title">${task.title}</span>
+            <span class="task-desc">${task.desc}</span>
+        </div>
+        <div class="action">
+            <button class="edit-btn">Edit</button>
+            <button class="delete-btn">Delete</button>
+            <button class="complete-btn">${task.completed ? "Undo" : "Done"}</button>
+        </div>
+    `;
+
+    div.querySelector(".delete-btn").onclick = () => this.deleteTask(task.id);
+    div.querySelector(".complete-btn").onclick = () => this.toggleComplete(task.id);
+    div.querySelector(".edit-btn").onclick = () => {
+        const newTitle = prompt("Edit title:", task.title);
+        const newDesc = prompt("Edit description:", task.desc);
+        if (newTitle) this.editTask(task.id, newTitle, newDesc);
+    };
+
+    this.listEl.appendChild(div);
+});
+
+this.updateCounter();
+this.saveToLocal();
+   
+       
+    }
+        }
+
+const listEl = document.getElementById("list");
+const counterEl = document.getElementById("counter");
+
+const todo = new Todo(listEl, counterEl);
+
+todo.loadFromLocal();
+todo.render();
+
+
+document.getElementById("addBtn").onclick = () => {
+    const title = document.getElementById("title").value;
+    const desc = document.getElementById("desc").value;
+    todo.addTask(title, desc);
+    document.getElementById("title").value = "";
+    document.getElementById("desc").value = "";
+};
+
+
+document.querySelectorAll(".filter-row button").forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll(".filter-row button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const filter = btn.getAttribute("filter");
+        todo.setFilterType(filter);
+    };
+});
+
+
+document.getElementById("sort").onchange = (e) => {
+    todo.setSortType(e.target.value);
+};
+
+
+document.getElementById("clearCompleted").onclick = () => {
+    todo.clearCompleted();
+};
+
+
+</script>
+
+    
+    
+</body>
+</html>
