@@ -243,3 +243,4 @@ timer.stop();
 const score = quiz.calculateScore();
 ui.showResult(score, quiz.questions.length);
 }
+
